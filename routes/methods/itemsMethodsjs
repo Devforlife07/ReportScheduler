@@ -1,0 +1,46 @@
+const Item = require("../../models/items");
+exports.addItem = async(req,res,next)=>{
+    const {title} = req.body;
+    if(!title){
+        let err = new Error("Please Enter Title Of Item");
+        err.status = 400;
+        return next(err);
+    }
+    try{
+        const newItem = new Item({title});
+        await newItem.save();
+        return res.status(200).send({message:"Saved Successfully"});
+    }
+    catch(e){
+        let error = new Error(e);
+        error.status = 401;
+        return next(error)
+    }
+
+}
+exports.getAllItems = async(req,res,next)=>{
+    try {
+        const allItems = await Item.find({}).sort("updatedAt");
+        return res.status(200).send({message:"Success",allItems})
+    } catch (e) {
+        console.log(e);
+        let err = new Error(e.message)
+        return next(err);
+    }
+}
+exports.getItemById = async(req,res,next)=>{
+    try {
+        const item = await Item.findById(req.params.id);
+        return res.status(200).send({message:"Success",item})
+
+    } catch (e) {
+        console.log(e)
+        if(e.kind=="ObjectId"){
+            let err = new Error("Invalid Id")
+            err.status = 404
+            return next(err);   
+        }
+        let err = new Error(e.message)
+        return next(err);
+    }
+}
